@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  compiler-repl:
+    build: .
+    container_name: osool_compiler
+    stdin_open: true
+    tty: true
