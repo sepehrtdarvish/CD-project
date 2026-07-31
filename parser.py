@@ -54,9 +54,6 @@ class FuncDecl(ASTNode):
     params: List[Any]
     body: Block
 
-# ==========================================
-# تحلیل‌گر نحوی (Recursive-Descent Parser)
-# ==========================================
 class Parser:
     def __init__(self, tokens):
         self.tokens = tokens
