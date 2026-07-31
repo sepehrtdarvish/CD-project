@@ -1,9 +1,6 @@
 from dataclasses import dataclass, field
 from typing import List, Optional, Any
 
-# ==========================================
-# ساختارهای درخت نحو انتزاعی (AST Nodes)
-# ==========================================
 @dataclass
 class ASTNode:
     line: int
