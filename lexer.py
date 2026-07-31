@@ -15,6 +15,8 @@ class Token:
 class Lexer:
     KEYWORDS = {'if', 'else', 'while', 'for', 'return', 'int', 'float', 'char', 'void', 'struct'}
 
+    # Longest match and priority is checked
+    # UNTERMINATED_COMMENT and UNTERMINATED_STRING and MISMATCH for error handling
     RULES = [
         ('BLOCK_COMMENT',       r'/\*[\s\S]*?\*/'),         
         ('UNTERMINATED_COMMENT',r'/\*[\s\S]*'),             
@@ -45,27 +47,28 @@ class Lexer:
         tokens = []
         while self.pos < len(self.code):
             match = self.GET_TOKEN(self.code, self.pos)
-            if not match:
+            if not match: # for Mismatch
                 break
             
-            type = match.lastgroup
-            lexeme = match.group(type)
+            type = match.lastgroup # اسم گروه ریجکس که متچ شده مثل INT
+            lexeme = match.group(type) # خود رشته مچ شده
             column = self.pos - self.line_start + 1
 
-            if type == 'NEWLINE':
+            if type == 'NEWLINE': # مدیریت فاصله ها و خطوط جدید
                 self.line_start = match.end()
                 self.line += 1
             elif type == 'SKIP' or type == 'LINE_COMMENT':
                 pass
-            elif type == 'BLOCK_COMMENT':
+
+            elif type == 'BLOCK_COMMENT': # مدیریت کامنت های چند خطی
                 self.line += lexeme.count('\n')
                 last_newline = lexeme.rfind('\n')
                 if last_newline != -1:
                     self.line_start = self.pos + last_newline + 1
-            elif type in ('UNTERMINATED_COMMENT', 'UNTERMINATED_STRING', 'MISMATCH'):
+            elif type in ('UNTERMINATED_COMMENT', 'UNTERMINATED_STRING', 'MISMATCH'): # Recovery from error
                 tokens.append(Token('INVALID', lexeme, self.line, column))
                 self.line += lexeme.count('\n')
-            else:
+            else: #ما اول هر کلمه ای رو Ident میبینیم ولی چک میکنیم اگه داخل Keywords بود تایپش رو تغییر میدیم.
                 if type == 'IDENT' and lexeme in self.KEYWORDS:
                     type = 'KEYWORD'
                 tokens.append(Token(type, lexeme, self.line, column))
