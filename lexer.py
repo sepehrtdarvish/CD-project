@@ -60,6 +60,24 @@ class Lexer:
             elif type == 'SKIP' or type == 'LINE_COMMENT':
                 pass
 
+            elif type == 'BLOCK_COMMENT': # مدیریت کامنت های چند خطی
+                self.line += lexeme.count('\n')
+                last_newline = lexeme.rfind('\n')
+                if last_newline != -1:
+                    self.line_start = self.pos + last_newline + 1
+            elif type in ('UNTERMINATED_COMMENT', 'UNTERMINATED_STRING', 'MISMATCH'): # Recovery from error
+                tokens.append(Token('INVALID', lexeme, self.line, column))
+                self.line += lexeme.count('\n')
+            else: #ما اول هر کلمه ای رو Ident میبینیم ولی چک میکنیم اگه داخل Keywords بود تایپش رو تغییر میدیم.
+                if type == 'IDENT' and lexeme in self.KEYWORDS:
+                    type = 'KEYWORD'
+                tokens.append(Token(type, lexeme, self.line, column))
+            
+            self.pos = match.end()
+            
+        tokens.append(Token('EOF', '', self.line, self.pos - self.line_start + 1))
+        return tokens
+
 if __name__ == "__main__":
     sample_code = """
     int factorial(int n) {
