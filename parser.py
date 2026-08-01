@@ -2,27 +2,27 @@ from dataclasses import dataclass, field
 from typing import List, Optional, Any
 
 @dataclass
-class ASTNode:
+class ASTNode: # درخت های انتزاعی که از گره های مختلفی تشکیل میشه رو از کلایه پایه ASTNode ارث بری میکنیم.
     line: int
     column: int
-    type_annotation: Optional[str] = field(default=None, init=False)
+    type_annotation: Optional[str] = field(default=None, init=False) # بعدا با نوع متغیر ها پر میشه.
 
 @dataclass
-class Identifier(ASTNode):
+class Identifier(ASTNode): #گره های برگ
     name: str
 
 @dataclass
-class IntLiteral(ASTNode):
+class IntLiteral(ASTNode): # گره های برگ
     value: int
 
 @dataclass
-class BinaryExpr(ASTNode):
+class BinaryExpr(ASTNode): # برای عملیات ریاضی
     left: ASTNode
     op: str
     right: ASTNode
 
 @dataclass
-class VarDecl(ASTNode):
+class VarDecl(ASTNode): # تعریف متغیر
     var_type: str
     name: Identifier
     init_expr: Optional[ASTNode]
@@ -38,7 +38,7 @@ class ReturnStmt(ASTNode):
     value: Optional[ASTNode]
 
 @dataclass
-class IfStmt(ASTNode):
+class IfStmt(ASTNode): # تعریف شرط ها
     condition: ASTNode
     then_branch: ASTNode
     else_branch: Optional[ASTNode] = None
@@ -48,24 +48,24 @@ class Block(ASTNode):
     statements: List[ASTNode]
 
 @dataclass
-class FuncDecl(ASTNode):
+class FuncDecl(ASTNode): # تعریف توابع
     return_type: str
     name: Identifier
     params: List[Any]
     body: Block
 
-class Parser:
+class Parser: # پارسر از نوع ll(1) یا همان پایین روتده بازگشتی
     def __init__(self, tokens):
         self.tokens = tokens
         self.pos = 0
         self.errors = []
 
-    def current_token(self):
+    def current_token(self): # همیشه توکنی که در حال بررسی هست رو به ما می‌ده.
         if self.pos < len(self.tokens):
             return self.tokens[self.pos]
         return self.tokens[-1]
 
-    def consume(self, expected_type=None, expected_lexeme=None):
+    def consume(self, expected_type=None, expected_lexeme=None): # اگر توکن فعلی مقدار مورد انتظار مارو نداشت  ارور برمیگرده
         token = self.current_token()
         if expected_type and token.type != expected_type:
             self.error(f"Expected token type '{expected_type}', got '{token.type}'")
@@ -80,10 +80,10 @@ class Parser:
         tok = self.current_token()
         err_msg = f"Syntax Error at {tok.line}:{tok.column} - {message}"
         self.errors.append(err_msg)
-        print(err_msg)
+        print(err_msg) # اگر اروری پیش بیاید چاپ میشود  و سریع تابع synchronizee صده زده میشودو
         self.synchronize()
 
-    def synchronize(self):
+    def synchronize(self): # شروع می‌کنه به جلو رفتن و دور ریختن توکن‌ها تا زمانی که به یک نقطه همگام سازی برسه
         self.pos += 1
         while self.pos < len(self.tokens):
             if self.tokens[self.pos - 1].type == 'DELIM' and self.tokens[self.pos - 1].lexeme == ';':
@@ -93,9 +93,9 @@ class Parser:
                 return
             self.pos += 1
 
-    def parse_program(self):
+    def parse_program(self):# طبق استراتژی ll(1) هر موجودیت گرامری به یک متد تبدیل میشود.
         declarations = []
-        while self.current_token().type != 'EOF':
+        while self.current_token().type != 'EOF': # تا زمانی که به توکن پایان فایل نرسیدیم توابع یکی یکی پارس میشود و به لیست declarations اضافه میشود.
             decl = self.parse_function()
             if decl:
                 declarations.append(decl)
@@ -103,30 +103,30 @@ class Parser:
                 self.pos += 1
         return declarations
 
-    def parse_function(self):
+    def parse_function(self): # توی این متد ما دقیقاً قانون گرامری تابع رو پیاده کردیم. اول نوع خروجی، بعد نام تابع، بعد پرانتز باز، بعد لیست پارامترها، پرانتز بسته و در نهایت یک بلاک کد.
         tok = self.current_token()
         if tok.type != 'KEYWORD' or tok.lexeme not in ['int', 'float', 'void', 'char']:
             return None
         
         ret_type = self.consume('KEYWORD').lexeme
-        name_tok = self.consume('IDENT')
+        name_tok = self.consume('IDENT') # نوع خروجی
         if not name_tok: return None
         
-        name = Identifier(name_tok.line, name_tok.column, name=name_tok.lexeme)
+        name = Identifier(name_tok.line, name_tok.column, name=name_tok.lexeme) # نام تابع
         
-        self.consume('DELIM', '(')
+        self.consume('DELIM', '(') # پرانتز از
         
         # آپدیت: خواندن و ذخیره پارامترها
         params = []
-        if self.current_token().type == 'KEYWORD' and self.current_token().lexeme in ['int', 'float', 'char']:
+        if self.current_token().type == 'KEYWORD' and self.current_token().lexeme in ['int', 'float', 'char']: # لیست پارامتر ها
             p_type = self.consume('KEYWORD').lexeme
             p_name_tok = self.consume('IDENT')
             p_ident = Identifier(p_name_tok.line, p_name_tok.column, name=p_name_tok.lexeme)
             params.append((p_type, p_ident)) # اضافه کردن به لیست پارامترها
             
-        self.consume('DELIM', ')')
+        self.consume('DELIM', ')') # پرانتز بسته.
         
-        body = self.parse_block()
+        body = self.parse_block() # یک بلاک کد
         # پاس دادن params به گره FuncDecl
         return FuncDecl(tok.line, tok.column, return_type=ret_type, name=name, params=params, body=body)
 
@@ -143,7 +143,7 @@ class Parser:
         self.consume('DELIM', '}')
         return Block(tok.line, tok.column, statements=statements)
 
-    def parse_statement(self):
+    def parse_statement(self): # مسیردهی اصلی دستورات رو انجام میده
         tok = self.current_token()
 
         if tok.type == 'KEYWORD' and tok.lexeme in ['int', 'float', 'char']:

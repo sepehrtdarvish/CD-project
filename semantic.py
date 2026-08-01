@@ -5,7 +5,7 @@ from typing import Dict, Optional, List, Tuple
 class Symbol:
     name: str
     kind: str
-    type: str
+    type: str #type
     definition_loc: Tuple[int, int]
     is_initialized: bool = False
     is_used: bool = False
