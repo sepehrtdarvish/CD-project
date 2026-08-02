@@ -1,4 +1,4 @@
-class SyntaxHighlighter: #‌ هایلایتر ما کاملا حساس به دامنه است
+class SyntaxHighlighter: #‌ هایلایتر ما کاملا حساس به دامنه است و سیستم به جدول سیمبل ها رجوع میکند.
     COLORS = {
         'KEYWORD': '\033[1;34m',      
         'TYPE': '\033[36m',           
@@ -55,9 +55,6 @@ class IntellisenseEngine:
         self.global_scope = global_scope
 
     def get_completions(self, prefix: str, current_scope) -> list:
-        """
-        تولید لیست تکمیل خودکار با پیمایش سلسله‌مراتب دامنه‌ها (Lexical Scoping).
-        """
         completions = []
         scope = current_scope
         
@@ -76,9 +73,6 @@ class IntellisenseEngine:
         return sorted(unique_completions.values(), key=lambda x: x['label'])
 
     def get_hover_info(self, name: str, current_scope) -> str:
-        """
-        تولید اطلاعات نمایشی برای زمانی که کاربر موس را روی یک متغیر یا تابع نگه می‌دارد (Hover)
-        """
         sym = current_scope.resolve(name)
         if sym:
             return f"[{sym.kind}]\n{sym.name}: {sym.type}\nDefined at line {sym.definition_loc[0]}"

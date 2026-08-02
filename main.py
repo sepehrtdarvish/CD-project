@@ -5,7 +5,7 @@ from semantic import SemanticAnalyzer
 from ide_services import SyntaxHighlighter
 from program_analyzer import NavigationEngine, CallGraph, CFG
 import sys
-
+from ide_services import SyntaxHighlighter, IntellisenseEngine
 
 def build_call_graph(ast_nodes):
     cg = CallGraph()
@@ -79,10 +79,10 @@ def start_repl():
         
     global_scope = analyzer.global_scope
     nav_engine = NavigationEngine(global_scope)
-    
+    intellisense = IntellisenseEngine(global_scope)
     call_graph = build_call_graph(ast_nodes)
 
-    print("✅ Ready! Commands: highlight | goto-def <name> | rename <old> <new> | callgraph | dead-code | exit\n")
+    print("✅ Ready! Commands: highlight | goto-def <name> | rename <old> <new> | callgraph | dead-code | hover <name> | complete <prefix> | exit\n")    
     
     while True:
         try:
@@ -125,7 +125,21 @@ def start_repl():
                 else:
                     for b in unreachable:
                         print(f"  ❌ Dead code block found: {b.id}")
-                        
+
+            elif cmd == "hover":
+                if len(args) != 1: print("Usage: hover <symbol_name>")
+                else: 
+                    print(intellisense.get_hover_info(args[0], global_scope))
+                    
+            elif cmd == "complete":
+                if len(args) != 1: print("Usage: complete <prefix>")
+                else: 
+                    completions = intellisense.get_completions(args[0], global_scope)
+                    if not completions:
+                        print("  No suggestions found.")
+                    for c in completions:
+                        print(f"  - {c['label']} [{c['kind']}] : {c['detail']}")
+
             else:
                 print("Unknown command.")
         except KeyboardInterrupt:

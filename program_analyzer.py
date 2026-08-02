@@ -3,7 +3,7 @@ from typing import List, Dict, Set, Tuple
 
 class CallGraph:# این بخش نشان میدهد توابع برنامه چطور با هم در ارتباط هستند
     def __init__(self):
-        self.edges: Dict[str, List[str]] = {}
+        self.edges: Dict[str, List[str]] = {} # هر گره به لیستی از توابعی که فراخوانی کرده اشاره میکنه
 
     def add_call(self, caller: str, callee: str):
         if caller not in self.edges:
@@ -38,7 +38,7 @@ class CFG:  # گراف جریان کنترل
         self.entry_block.successors.append(self.exit_block)
         self.blocks = [self.entry_block, self.exit_block]
 
-    def detect_unreachable_blocks(self) -> List[BasicBlock]:
+    def detect_unreachable_blocks(self) -> List[BasicBlock]: # با استفاده از الگوریتم دی اف اس گراف را پیمایش میکند 
         """تشخیص کدهای مرده (بلوک‌های غیرقابل دسترس) از طریق پیمایش گراف"""
         visited = set()
         
