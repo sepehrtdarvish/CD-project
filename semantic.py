@@ -10,10 +10,10 @@ class Symbol:
     is_initialized: bool = False
     is_used: bool = False
 
-class SymbolTable:
+class SymbolTable: # هر موجودیتی در کد تعریف میشود مثل متغیر یا تابع یا پارامتر در این کلاس تعریف میشود.
     def __init__(self, scope_name: str, parent: Optional['SymbolTable'] = None):
         self.scope_name = scope_name
-        self.parent = parent
+        self.parent = parent # به دامنه بیرونی اشاره میکند.
         self.symbols: Dict[str, Symbol] = {}
         self.children: List['SymbolTable'] = []
 
@@ -21,27 +21,25 @@ class SymbolTable:
             parent.children.append(self)
 
     def define(self, symbol: Symbol) -> bool:
-        """اضافه کردن یک نماد به دامنه فعلی. در صورت تکراری بودن False برمی‌گرداند."""
         if symbol.name in self.symbols:
             return False
         self.symbols[symbol.name] = symbol
         return True
 
-    def resolve(self, name: str) -> Optional[Symbol]:
-        """جستجوی نماد بر اساس قانون Lexical Scoping (از داخل به بیرون)"""
+    def resolve(self, name: str) -> Optional[Symbol]: # اگر متغیری در دامنه فعلی پیدا نشود کامپایلر
         if name in self.symbols:
             return self.symbols[name]
         if self.parent:
             return self.parent.resolve(name)
         return None
 
-class SemanticAnalyzer:
+class SemanticAnalyzer: # برای خرکت رو درخت تخو انتزاعی که در قبل تولید شد از الگوی طراحی visitor استفاده کردم.
     def __init__(self):
         self.global_scope = SymbolTable("Global")
         self.current_scope = self.global_scope
         self.diagnostics = []
 
-    def visit_VarDecl(self, node):
+    def visit_VarDecl(self, node): # با توجه به نوع هر گره به صورت داینامیک متد مربوط به اون رو صدا میزنه
         if node.init_expr:
             self.visit(node.init_expr)
             
@@ -56,7 +54,7 @@ class SemanticAnalyzer:
         if not self.current_scope.define(var_symbol):
             self.report_diagnostic("Error", f"Duplicate declaration of variable '{node.name.name}'", node.line, node.column)
 
-    def report_diagnostic(self, severity: str, message: str, line: int, column: int):
+    def report_diagnostic(self, severity: str, message: str, line: int, column: int):# تشخیص خطاهایی مثل: استفاده از متغیری که قبلا تعریف نشده. تعریف دو متغیر هم نام در یک دامنه
         self.diagnostics.append(f"[{severity}] {line}:{column} - {message}")
         print(self.diagnostics[-1])
 
@@ -72,7 +70,7 @@ class SemanticAnalyzer:
         pass
 
 
-    def visit_FuncDecl(self, node):
+    def visit_FuncDecl(self, node): # وقتی کامپایلر به تعریف یه تابع میرسه یه سیمبل تیبل جدید میسازه و والدش رو دامنه فعلی قرار میده
         func_scope = SymbolTable(f"Function_{node.name.name}", parent=self.current_scope)
         self.current_scope = func_scope
         

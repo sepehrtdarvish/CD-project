@@ -1,4 +1,4 @@
-class SyntaxHighlighter:
+class SyntaxHighlighter: #‌ هایلایتر ما کاملا حساس به دامنه است
     COLORS = {
         'KEYWORD': '\033[1;34m',      
         'TYPE': '\033[36m',           

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Dict, Set, Tuple
 
-class CallGraph:
+class CallGraph:# این بخش نشان میدهد توابع برنامه چطور با هم در ارتباط هستند
     def __init__(self):
         self.edges: Dict[str, List[str]] = {}
 
@@ -24,13 +24,13 @@ class CallGraph:
         return recursive_funcs
 
 @dataclass
-class BasicBlock:
+class BasicBlock: # هر بلوک پایه ای نمایانگر دنباله ای از دستورات است که بدون هیچ انشعابی اجرا میشوند و حداکثر دو جانشین دارند.
     """هر Basic Block شامل دنباله‌ای از دستورات بدون انشعاب است"""
     id: str
     statements: List[any]
     successors: List['BasicBlock']
 
-class CFG:
+class CFG:  # گراف جریان کنترل
     def __init__(self, function_name: str):
         self.function_name = function_name
         self.entry_block = BasicBlock(id="ENTRY", statements=[], successors=[])
@@ -81,7 +81,7 @@ class NavigationEngine:
             if found: return found
         return None
 
-    def safe_rename(self, old_name: str, new_name: str, global_scope) -> dict:
+    def safe_rename(self, old_name: str, new_name: str, global_scope) -> dict: # کاملا وابسته به دامنه است و سایه اندازی روی متغیر بیرونی بررسی میشود
         """تغییر نام امن با جستجوی هوشمند در تمامی دامنه‌ها"""
         target_scope = self.find_scope_containing(old_name, global_scope)
         
