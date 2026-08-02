@@ -56,9 +56,9 @@ class IntellisenseEngine:
 
     def get_completions(self, prefix: str, current_scope) -> list:
         completions = []
-        scope = current_scope
+        scope = current_scope # از دامنه فعلی شروع میکند
         
-        while scope is not None:
+        while scope is not None: # تمام دامنه های بیرون را میگردد تا نماد های مجاز در آن نقطه کد را پیدا کند (lexical scoping)
             for name, sym in scope.symbols.items():
                 if name.startswith(prefix):
                     completions.append({
